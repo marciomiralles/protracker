@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ProTracker">
+<meta name="theme-color" content="#0e0f11">
+<title>ProTracker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0e0f11;--surface:#16181c;--surface2:#1e2026;--border:#2a2d35;
+    --accent:#c8f060;--accent2:#60d4f0;--text:#f0f0ee;--muted:#7a7d86;
+    --danger:#f06060;--protein:#c8f060;--cal:#f0b860;
+  }
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;padding-bottom:env(safe-area-inset-bottom)}
+  .header{padding:20px 20px 0;display:flex;align-items:center;justify-content:space-between}
+  .logo{font-family:'Space Mono',monospace;font-size:18px;font-weight:700}
+  .logo span{color:var(--accent)}
+  .date-pill{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;color:var(--muted);font-family:'Space Mono',monospace}
+  .summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:18px 20px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px}
+  .card.protein{border-color:rgba(200,240,96,0.3)}
+  .card.cal{border-color:rgba(240,184,96,0.3)}
+  .card-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-family:'Space Mono',monospace}
+  .card-value{font-size:28px;font-weight:600;font-family:'Space Mono',monospace;line-height:1}
+  .card-value.protein{color:var(--protein)}
+  .card-value.cal{color:var(--cal)}
+  .card-unit{font-size:12px;color:var(--muted);margin-top:4px}
+  .card-bar{height:4px;background:var(--border);border-radius:2px;margin-top:12px;overflow:hidden}
+  .card-bar-fill{height:100%;border-radius:2px;transition:width 0.6s ease}
+  .card-bar-fill.protein{background:var(--protein)}
+  .card-bar-fill.cal{background:var(--cal)}
+  .goals-row{display:flex;gap:8px;padding:0 20px 14px;align-items:center}
+  .goal-tag{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace}
+  .goal-edit{background:none;border:none;color:var(--accent2);font-size:11px;cursor:pointer;font-family:'Space Mono',monospace;text-decoration:underline;padding:0}
+  .tabs{display:flex;padding:0 20px;border-bottom:1px solid var(--border)}
+  .tab{flex:1;padding:12px 0;text-align:center;font-size:13px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;font-weight:500}
+  .tab.active{color:var(--text);border-bottom-color:var(--accent)}
+  .panel{display:none;padding:16px 20px}
+  .panel.active{display:block}
+  .search-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;padding:12px 16px;outline:none;margin-bottom:10px;transition:border-color 0.2s;-webkit-appearance:none}
+  .search-input:focus{border-color:rgba(96,212,240,0.4)}
+  .search-input::placeholder{color:var(--muted)}
+  .search-results{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto}
+  .food-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:border-color 0.15s}
+  .food-item:active{border-color:var(--accent2)}
+  .food-name{font-size:14px;font-weight:500}
+  .food-meta{font-size:12px;color:var(--muted);margin-top:2px}
+  .food-stats{text-align:right;font-family:'Space Mono',monospace;font-size:12px}
+  .food-p{color:var(--protein)}
+  .food-c{color:var(--cal)}
+  .food-del{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 0 4px 8px;line-height:1}
+  .add-food-btn{width:100%;background:none;border:1px dashed var(--border);border-radius:12px;color:var(--accent2);padding:12px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:8px}
+  .log-entry{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .log-name{font-size:14px;font-weight:500}
+  .log-qty{font-size:12px;color:var(--muted);margin-top:2px}
+  .log-nums{display:flex;gap:12px;align-items:center}
+  .log-p{font-family:'Space Mono',monospace;font-size:13px;color:var(--protein)}
+  .log-c{font-family:'Space Mono',monospace;font-size:13px;color:var(--cal)}
+  .log-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:4px;line-height:1}
+  .empty-state{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px}
+  .empty-icon{font-size:32px;margin-bottom:12px;opacity:0.4}
+  .hist-day{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden}
+  .hist-header{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+  .hist-date{font-family:'Space Mono',monospace;font-size:13px;font-weight:700}
+  .hist-totals{display:flex;gap:12px;align-items:center}
+  .hist-p{font-family:'Space Mono',monospace;font-size:12px;color:var(--protein)}
+  .hist-c{font-family:'Space Mono',monospace;font-size:12px;color:var(--cal)}
+  .hist-chevron{font-size:12px;color:var(--muted);transition:transform 0.2s}
+  .hist-chevron.open{transform:rotate(180deg)}
+  .hist-entries{display:none;border-top:1px solid var(--border);padding:10px 16px}
+  .hist-entries.open{display:block}
+  .hist-entry{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)}
+  .hist-entry:last-child{border-bottom:none}
+  .hist-entry-name{font-size:13px}
+  .hist-entry-qty{font-size:11px;color:var(--muted);margin-top:1px}
+  .hist-entry-nums{font-family:'Space Mono',monospace;font-size:12px;display:flex;gap:10px}
+  .hist-bars{display:flex;gap:8px;padding:0 16px 12px}
+  .hist-bar-wrap{flex:1}
+  .hist-bar-label{font-size:10px;color:var(--muted);margin-bottom:3px;font-family:'Space Mono',monospace}
+  .hist-bar-bg{height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+  .hist-bar-fill-p{height:100%;background:var(--protein);border-radius:2px}
+  .hist-bar-fill-c{height:100%;background:var(--cal);border-radius:2px}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+  .overlay.show{display:flex}
+  .modal{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:24px;width:100%;max-width:340px}
+  .modal-title{font-size:16px;font-weight:600;margin-bottom:4px}
+  .modal-meta{font-size:12px;color:var(--muted);margin-bottom:20px;font-family:'Space Mono',monospace}
+  .qty-row{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+  .qty-input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:18px;font-family:'Space Mono',monospace;padding:10px 14px;outline:none;text-align:center;-webkit-appearance:none}
+  .qty-unit{font-size:14px;color:var(--muted)}
+  .qty-preview{background:var(--bg);border-radius:12px;padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+  .qty-stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-family:'Space Mono',monospace}
+  .qty-stat-value{font-size:20px;font-weight:600;font-family:'Space Mono',monospace}
+  .modal-btns{display:flex;gap:10px}
+  .btn-cancel{flex:1;background:none;border:1px solid var(--border);border-radius:10px;color:var(--muted);padding:11px;cursor:pointer;font-size:14px;font-family:'DM Sans',sans-serif}
+  .btn-primary{flex:2;background:var(--accent);border:none;border-radius:10px;color:#0e0f11;padding:11px;cursor:pointer;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif}
+  .field{margin-bottom:14px}
+  .field label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-family:'Space Mono',monospace;display:block;margin-bottom:6px}
+  .field input,.field select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:15px;font-family:'DM Sans',sans-serif;padding:10px 14px;outline:none;-webkit-appearance:none}
+  .field input:focus{border-color:var(--accent2)}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .custom-badge{display:inline-block;background:rgba(96,212,240,0.1);color:var(--accent2);font-size:10px;padding:2px 7px;border-radius:6px;margin-left:6px;font-family:'Space Mono',monospace;vertical-align:middle}
+  ::-webkit-scrollbar{width:4px}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">Pro<span>Tracker</span></div>
+  <div class="date-pill" id="datePill"></div>
+</div>
+
+<div class="summary">
+  <div class="card protein">
+    <div class="card-label">Proteína</div>
+    <div class="card-value protein" id="totalProtein">0<span style="font-size:14px">g</span></div>
+    <div class="card-unit">meta: <span id="goalProteinDisplay">150</span>g</div>
+    <div class="card-bar"><div class="card-bar-fill protein" id="barProtein" style="width:0%"></div></div>
+  </div>
+  <div class="card cal">
+    <div class="card-label">Calorías</div>
+    <div class="card-value cal" id="totalCal">0<span style="font-size:14px">kcal</span></div>
+    <div class="card-unit">meta: <span id="goalCalDisplay">2000</span>kcal</div>
+    <div class="card-bar"><div class="card-bar-fill cal" id="barCal" style="width:0%"></div></div>
+  </div>
+</div>
+
+<div class="goals-row">
+  <span class="goal-tag">Metas diarias</span>
+  <button class="goal-edit" onclick="openGoals()">editar</button>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('search')">Buscar</div>
+  <div class="tab" onclick="switchTab('log')">Hoy</div>
+  <div class="tab" onclick="switchTab('history')">Historial</div>
+</div>
+
+<div class="panel active" id="panel-search">
+  <input class="search-input" id="searchInput" placeholder="Buscar alimento..." oninput="searchFoods(this.value)">
+  <div class="search-results" id="searchResults"></div>
+  <button class="add-food-btn" onclick="openNewFood()">+ Agregar alimento nuevo</button>
+</div>
+
+<div class="panel" id="panel-log">
+  <div id="logContainer"></div>
+</div>
+
+<div class="panel" id="panel-history">
+  <div id="historyContainer"></div>
+</div>
+
+<!-- Qty Modal -->
+<div class="overlay" id="qtyOverlay">
+  <div class="modal">
+    <div class="modal-title" id="qtyFoodName"></div>
+    <div class="modal-meta" id="qtyFoodMeta"></div>
+    <div class="qty-row">
+      <input type="number" class="qty-input" id="qtyValue" value="100" min="1" oninput="updateQtyPreview()">
+      <span class="qty-unit" id="qtyUnitLabel">gramos</span>
+    </div>
+    <div class="qty-preview">
+      <div><div class="qty-stat-label">Proteína</div><div class="qty-stat-value" style="color:var(--protein)" id="qtyProtein">–</div></div>
+      <div><div class="qty-stat-label">Calorías</div><div class="qty-stat-value" style="color:var(--cal)" id="qtyCal">–</div></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeQty()">Cancelar</button>
+      <button class="btn-primary" onclick="confirmQty()">+ Agregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Food Modal -->
+<div class="overlay" id="newFoodOverlay">
+  <div class="modal">
+    <div class="modal-title" style="margin-bottom:18px">Nuevo alimento</div>
+    <div class="field"><label>Nombre</label><input type="text" id="nfName" placeholder="Ej: Milanesa de pollo"></div>
+    <div class="field-row">
+      <div class="field"><label>Proteína (g/100g)</label><input type="number" id="nfProtein" placeholder="25" min="0" step="0.1"></div>
+      <div class="field"><label>Calorías (kcal/100g)</label><input type="number" id="nfCal" placeholder="200" min="0"></div>
+    </div>
+    <div class="field">
+      <label>Unidad</label>
+      <select id="nfUnit">
+        <option value="g">g (gramos)</option>
+        <option value="ml">ml (mililitros)</option>
+      </select>
+    </div>
+    <div id="nfError" style="font-size:13px;color:var(--danger);margin-bottom:12px;display:none"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeNewFood()">Cancelar</button>
+      <button class="btn-primary" onclick="saveNewFood()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Goals Modal -->
+<div class="overlay" id="goalsOverlay">
+  <div class="modal">
+    <div class="modal-title" style="margin-bottom:18px">Metas diarias</div>
+    <div class="field"><label>Proteína (g)</label><input type="number" id="goalProteinInput" value="150" min="1"></div>
+    <div class="field"><label>Calorías (kcal)</label><input type="number" id="goalCalInput" value="2000" min="1"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeGoals()">Cancelar</button>
+      <button class="btn-primary" onclick="saveGoals()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const FOOD_DB_DEFAULT = [
+  {id:1,name:"Pechuga de pollo",per100:{p:31,c:165},unit:"g"},
+  {id:2,name:"Huevo entero",per100:{p:13,c:155},unit:"g"},
+  {id:3,name:"Atún en agua",per100:{p:26,c:116},unit:"g"},
+  {id:4,name:"Yogur griego natural",per100:{p:10,c:97},unit:"g"},
+  {id:5,name:"Carne molida 90%",per100:{p:26,c:176},unit:"g"},
+  {id:6,name:"Salmón",per100:{p:25,c:208},unit:"g"},
+  {id:7,name:"Leche entera",per100:{p:3.4,c:61},unit:"ml"},
+  {id:8,name:"Queso cottage",per100:{p:11,c:98},unit:"g"},
+  {id:9,name:"Proteína whey",per100:{p:80,c:400},unit:"g"},
+  {id:10,name:"Lentejas cocidas",per100:{p:9,c:116},unit:"g"},
+  {id:11,name:"Frijoles negros cocidos",per100:{p:8.9,c:132},unit:"g"},
+  {id:12,name:"Tofu firme",per100:{p:17,c:144},unit:"g"},
+  {id:13,name:"Arroz blanco cocido",per100:{p:2.7,c:130},unit:"g"},
+  {id:14,name:"Avena",per100:{p:13,c:389},unit:"g"},
+  {id:15,name:"Pan integral",per100:{p:9,c:247},unit:"g"},
+  {id:16,name:"Banana",per100:{p:1.1,c:89},unit:"g"},
+  {id:17,name:"Manzana",per100:{p:0.3,c:52},unit:"g"},
+  {id:18,name:"Aguacate",per100:{p:2,c:160},unit:"g"},
+  {id:19,name:"Almendras",per100:{p:21,c:579},unit:"g"},
+  {id:20,name:"Mantequilla de maní",per100:{p:25,c:588},unit:"g"},
+  {id:21,name:"Espinaca cocida",per100:{p:3,c:23},unit:"g"},
+  {id:22,name:"Brócoli cocido",per100:{p:2.8,c:35},unit:"g"},
+  {id:23,name:"Papa cocida",per100:{p:2,c:87},unit:"g"},
+  {id:24,name:"Clara de huevo",per100:{p:11,c:52},unit:"g"},
+  {id:25,name:"Jamón de pavo",per100:{p:18,c:107},unit:"g"},
+  {id:26,name:"Sardinas en lata",per100:{p:25,c:208},unit:"g"},
+  {id:27,name:"Carne de res magra",per100:{p:28,c:185},unit:"g"},
+  {id:28,name:"Camarones",per100:{p:24,c:99},unit:"g"},
+  {id:29,name:"Quinoa cocida",per100:{p:4.4,c:120},unit:"g"},
+  {id:30,name:"Leche descremada",per100:{p:3.4,c:35},unit:"ml"},
+];
+
+let state = { goals:{protein:150,cal:2000}, customFoods:[], currentFood:null };
+
+function getToday(){ return new Date().toISOString().split('T')[0]; }
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem('protracker_v4');
+    if(raw) { const d=JSON.parse(raw); state.goals=d.goals||{protein:150,cal:2000}; state.customFoods=d.customFoods||[]; }
+  } catch(e){}
+}
+function saveState() {
+  try {
+    const raw=localStorage.getItem('protracker_v4');
+    const d=raw?JSON.parse(raw):{};
+    d.goals=state.goals; d.customFoods=state.customFoods;
+    localStorage.setItem('protracker_v4',JSON.stringify(d));
+  } catch(e){}
+}
+function getTodayLog() {
+  try { const r=localStorage.getItem('protracker_day_'+getToday()); return r?JSON.parse(r):[]; } catch(e){ return []; }
+}
+function saveTodayLog(log) {
+  try { localStorage.setItem('protracker_day_'+getToday(),JSON.stringify(log)); } catch(e){}
+}
+function getAllDays() {
+  const days=[];
+  for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    if(key&&key.startsWith('protracker_day_')){
+      const date=key.replace('protracker_day_','');
+      try{ const log=JSON.parse(localStorage.getItem(key))||[]; if(log.length>0) days.push({date,log}); }catch(e){}
+    }
+  }
+  return days.sort((a,b)=>b.date.localeCompare(a.date));
+}
+function getAllFoods(){ return [...FOOD_DB_DEFAULT,...state.customFoods]; }
+
+loadState();
+document.getElementById('datePill').textContent=new Date().toLocaleDateString('es-BO',{weekday:'short',day:'numeric',month:'short'});
+applyGoals(); updateSummary(); renderLog(); searchFoods('');
+scheduleMidnightRefresh();
+
+function scheduleMidnightRefresh(){
+  const now=new Date(), midnight=new Date(now);
+  midnight.setHours(24,0,0,0);
+  setTimeout(()=>{ updateSummary(); renderLog(); document.getElementById('datePill').textContent=new Date().toLocaleDateString('es-BO',{weekday:'short',day:'numeric',month:'short'}); scheduleMidnightRefresh(); }, midnight-now);
+}
+
+function switchTab(name){
+  ['search','log','history'].forEach((n,i)=>{
+    document.querySelectorAll('.tabs .tab')[i].classList.toggle('active',n===name);
+    document.getElementById('panel-'+n).classList.toggle('active',n===name);
+  });
+  if(name==='log') renderLog();
+  if(name==='history') renderHistory();
+}
+
+function updateSummary(){
+  const log=getTodayLog();
+  const totP=log.reduce((a,e)=>a+e.protein,0), totC=log.reduce((a,e)=>a+e.cal,0);
+  document.getElementById('totalProtein').innerHTML=Math.round(totP)+'<span style="font-size:14px">g</span>';
+  document.getElementById('totalCal').innerHTML=Math.round(totC)+'<span style="font-size:14px">kcal</span>';
+  document.getElementById('barProtein').style.width=Math.min(100,totP/state.goals.protein*100)+'%';
+  document.getElementById('barCal').style.width=Math.min(100,totC/state.goals.cal*100)+'%';
+}
+
+function applyGoals(){
+  document.getElementById('goalProteinDisplay').textContent=state.goals.protein;
+  document.getElementById('goalCalDisplay').textContent=state.goals.cal;
+  document.getElementById('goalProteinInput').value=state.goals.protein;
+  document.getElementById('goalCalInput').value=state.goals.cal;
+}
+function openGoals(){ document.getElementById('goalsOverlay').classList.add('show'); }
+function closeGoals(){ document.getElementById('goalsOverlay').classList.remove('show'); }
+function saveGoals(){
+  state.goals.protein=parseInt(document.getElementById('goalProteinInput').value)||150;
+  state.goals.cal=parseInt(document.getElementById('goalCalInput').value)||2000;
+  applyGoals(); updateSummary(); saveState(); closeGoals();
+}
+
+function searchFoods(q){
+  const el=document.getElementById('searchResults'), all=getAllFoods();
+  const matches=q.trim()?all.filter(f=>f.name.toLowerCase().includes(q.toLowerCase())).slice(0,10):all.slice(0,10);
+  if(!matches.length){ el.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Sin resultados</div>'; return; }
+  el.innerHTML=matches.map(f=>{
+    const isCustom=!!f.custom;
+    return `<div class="food-item" onclick="openQty(${f.id})">
+      <div style="flex:1;min-width:0">
+        <div class="food-name">${f.name}${isCustom?'<span class="custom-badge">personalizado</span>':''}</div>
+        <div class="food-meta">por 100${f.unit}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div class="food-stats"><div class="food-p">${f.per100.p}g prot</div><div class="food-c">${f.per100.c} kcal</div></div>
+        ${isCustom?`<button class="food-del" onclick="deleteCustomFood(event,${f.id})">×</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function deleteCustomFood(e,id){
+  e.stopPropagation(); state.customFoods=state.customFoods.filter(f=>f.id!==id);
+  saveState(); searchFoods(document.getElementById('searchInput').value);
+}
+
+function openNewFood(){
+  ['nfName','nfProtein','nfCal'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('nfUnit').value='g';
+  document.getElementById('nfError').style.display='none';
+  document.getElementById('newFoodOverlay').classList.add('show');
+  setTimeout(()=>document.getElementById('nfName').focus(),100);
+}
+function closeNewFood(){ document.getElementById('newFoodOverlay').classList.remove('show'); }
+function saveNewFood(){
+  const name=document.getElementById('nfName').value.trim();
+  const protein=parseFloat(document.getElementById('nfProtein').value);
+  const cal=parseFloat(document.getElementById('nfCal').value);
+  const unit=document.getElementById('nfUnit').value;
+  const errEl=document.getElementById('nfError');
+  if(!name){ errEl.textContent='Ingresá un nombre.'; errEl.style.display='block'; return; }
+  if(isNaN(protein)||protein<0){ errEl.textContent='Proteína inválida.'; errEl.style.display='block'; return; }
+  if(isNaN(cal)||cal<0){ errEl.textContent='Calorías inválidas.'; errEl.style.display='block'; return; }
+  state.customFoods.push({id:Date.now(),name,per100:{p:protein,c:cal},unit,custom:true});
+  saveState(); closeNewFood();
+  document.getElementById('searchInput').value=name; searchFoods(name);
+}
+
+function openQty(foodId){
+  const food=getAllFoods().find(f=>f.id===foodId); if(!food) return;
+  state.currentFood=food;
+  document.getElementById('qtyFoodName').textContent=food.name;
+  document.getElementById('qtyFoodMeta').textContent=`por 100${food.unit}: ${food.per100.c}kcal · ${food.per100.p}g prot`;
+  document.getElementById('qtyUnitLabel').textContent=food.unit==='ml'?'ml':'gramos';
+  document.getElementById('qtyValue').value=100; updateQtyPreview();
+  document.getElementById('qtyOverlay').classList.add('show');
+}
+function updateQtyPreview(){
+  const f=state.currentFood; if(!f) return;
+  const qty=parseFloat(document.getElementById('qtyValue').value)||0;
+  document.getElementById('qtyProtein').textContent=(f.per100.p*qty/100).toFixed(1)+'g';
+  document.getElementById('qtyCal').textContent=Math.round(f.per100.c*qty/100);
+}
+function closeQty(){ document.getElementById('qtyOverlay').classList.remove('show'); state.currentFood=null; }
+function confirmQty(){
+  const f=state.currentFood, qty=parseFloat(document.getElementById('qtyValue').value)||0;
+  if(!f||qty<=0) return;
+  const log=getTodayLog();
+  log.push({id:Date.now()+Math.random(),name:f.name,qty,unit:f.unit,protein:parseFloat((f.per100.p*qty/100).toFixed(1)),cal:Math.round(f.per100.c*qty/100),time:new Date().toLocaleTimeString('es-BO',{hour:'2-digit',minute:'2-digit'})});
+  saveTodayLog(log); updateSummary(); closeQty();
+  document.getElementById('searchInput').value=''; searchFoods(''); switchTab('log');
+}
+
+function removeEntry(id){
+  saveTodayLog(getTodayLog().filter(e=>e.id!==id)); updateSummary(); renderLog();
+}
+function renderLog(){
+  const el=document.getElementById('logContainer'), log=getTodayLog();
+  if(!log.length){ el.innerHTML='<div class="empty-state"><div class="empty-icon">🥗</div><div>Aún no registraste nada hoy</div></div>'; return; }
+  el.innerHTML=[...log].sort((a,b)=>a.id-b.id).map(e=>`
+    <div class="log-entry">
+      <div><div class="log-name">${e.name}</div><div class="log-qty">${Math.round(e.qty)}${e.unit||'g'} · ${e.time}</div></div>
+      <div class="log-nums"><span class="log-p">${e.protein}g</span><span class="log-c">${e.cal}</span><button class="log-del" onclick="removeEntry(${e.id})">×</button></div>
+    </div>`).join('');
+}
+
+function formatDate(dateStr){
+  const [y,m,d]=dateStr.split('-').map(Number), date=new Date(y,m-1,d);
+  const yest=new Date(); yest.setDate(yest.getDate()-1);
+  if(dateStr===yest.toISOString().split('T')[0]) return 'Ayer';
+  return date.toLocaleDateString('es-BO',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+}
+
+function renderHistory(){
+  const el=document.getElementById('historyContainer');
+  const pastDays=getAllDays().filter(d=>d.date!==getToday());
+  if(!pastDays.length){ el.innerHTML='<div class="empty-state"><div class="empty-icon">📅</div><div>Aún no hay días anteriores</div></div>'; return; }
+  el.innerHTML=pastDays.map((day,i)=>{
+    const totP=day.log.reduce((a,e)=>a+e.protein,0), totC=day.log.reduce((a,e)=>a+e.cal,0);
+    return `<div class="hist-day">
+      <div class="hist-header" onclick="toggleHistDay(${i})">
+        <div><div class="hist-date">${formatDate(day.date)}</div></div>
+        <div class="hist-totals"><span class="hist-p">${Math.round(totP)}g</span><span class="hist-c">${Math.round(totC)}kcal</span><span class="hist-chevron" id="chevron-${i}">▼</span></div>
+      </div>
+      <div class="hist-bars">
+        <div class="hist-bar-wrap"><div class="hist-bar-label">prot ${Math.round(totP)}/${state.goals.protein}g</div><div class="hist-bar-bg"><div class="hist-bar-fill-p" style="width:${Math.min(100,totP/state.goals.protein*100)}%"></div></div></div>
+        <div class="hist-bar-wrap"><div class="hist-bar-label">kcal ${Math.round(totC)}/${state.goals.cal}</div><div class="hist-bar-bg"><div class="hist-bar-fill-c" style="width:${Math.min(100,totC/state.goals.cal*100)}%"></div></div></div>
+      </div>
+      <div class="hist-entries" id="hist-entries-${i}">
+        ${day.log.map(e=>`<div class="hist-entry"><div><div class="hist-entry-name">${e.name}</div><div class="hist-entry-qty">${Math.round(e.qty)}${e.unit||'g'} · ${e.time||''}</div></div><div class="hist-entry-nums"><span style="color:var(--protein)">${e.protein}g</span><span style="color:var(--cal)">${e.cal}kcal</span></div></div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleHistDay(i){
+  document.getElementById('hist-entries-'+i).classList.toggle('open');
+  document.getElementById('chevron-'+i).classList.toggle('open');
+}
+</script>
+</body>
+</html>
