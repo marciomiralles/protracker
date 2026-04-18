@@ -243,14 +243,14 @@ const FOOD_DB_DEFAULT = [
   {id:29,name:"Quinoa cocida",per100:{p:4.4,c:120},unit:"g"},
 ];
 
-let state = { goals:{protein:150,cal:2000}, customFoods:[], currentFood:null };
+let state = { goals:{protein:150,cal:1500}, customFoods:[], currentFood:null };
 
 function getToday(){ return new Date().toISOString().split('T')[0]; }
 
 function loadState() {
   try {
     const raw = localStorage.getItem('protracker_v4');
-    if(raw) { const d=JSON.parse(raw); state.goals=d.goals||{protein:150,cal:2000}; state.customFoods=d.customFoods||[]; }
+    if(raw) { const d=JSON.parse(raw); state.goals=d.goals||{protein:120,cal:1500}; state.customFoods=d.customFoods||[]; }
   } catch(e){}
 }
 function saveState() {
