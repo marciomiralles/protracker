@@ -215,15 +215,14 @@
 
 <script>
 const FOOD_DB_DEFAULT = [
-  {id:1,name:"Pechuga de pollo",per100:{p:31,c:165},unit:"g"},
+  {id:1,name:"Pechuga de pollo",per100:{p:27,c:165},unit:"g"},
   {id:2,name:"Huevo entero",per100:{p:6.5,c:155},unit:"g"},
   {id:3,name:"Atún en agua",per100:{p:26,c:116},unit:"g"},
   {id:4,name:"Yogur griego natural",per100:{p:10,c:97},unit:"g"},
   {id:5,name:"Carne molida 90%",per100:{p:26,c:176},unit:"g"},
-  {id:6,name:"Salmón",per100:{p:25,c:208},unit:"g"},
   {id:7,name:"Leche entera",per100:{p:3.4,c:61},unit:"ml"},
   {id:8,name:"Queso cottage",per100:{p:11,c:98},unit:"g"},
-  {id:9,name:"Proteína whey",per100:{p:80,c:400},unit:"g"},
+  {id:9,name:"Proteína whey",per30:{p:24,c:400},unit:"g"},
   {id:10,name:"Lentejas cocidas",per100:{p:9,c:116},unit:"g"},
   {id:11,name:"Frijoles negros cocidos",per100:{p:8.9,c:132},unit:"g"},
   {id:12,name:"Tofu firme",per100:{p:17,c:144},unit:"g"},
@@ -240,11 +239,8 @@ const FOOD_DB_DEFAULT = [
   {id:23,name:"Papa cocida",per100:{p:2,c:87},unit:"g"},
   {id:24,name:"Clara de huevo",per100:{p:11,c:52},unit:"g"},
   {id:25,name:"Jamón de pavo",per100:{p:18,c:107},unit:"g"},
-  {id:26,name:"Sardinas en lata",per100:{p:25,c:208},unit:"g"},
   {id:27,name:"Carne de res magra",per100:{p:28,c:185},unit:"g"},
-  {id:28,name:"Camarones",per100:{p:24,c:99},unit:"g"},
   {id:29,name:"Quinoa cocida",per100:{p:4.4,c:120},unit:"g"},
-  {id:30,name:"Leche descremada",per100:{p:3.4,c:35},unit:"ml"},
 ];
 
 let state = { goals:{protein:150,cal:2000}, customFoods:[], currentFood:null };
